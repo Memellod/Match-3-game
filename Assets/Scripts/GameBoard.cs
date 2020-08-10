@@ -6,16 +6,17 @@ using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-///
+
 public class GameBoard : MonoBehaviour
 {
     [Range(0,15)]
-    [SerializeField] int columns = 10, rows = 4; // number of cols and rows in board
+    [SerializeField] public int columns = 10, rows = 4; // number of cols and rows in board
     [SerializeField] GameObject tileBase = null; // base of tile
     Tile[,] board;          
     public Tile selectedTile;                   
-    [SerializeField] int  scaleColumns = 2, scaleRows = 2;  // scale for calculating position
+    [SerializeField] public int  scaleColumns = 2, scaleRows = 2;  // scale for calculating position
     [SerializeField] GameObject panel;  // UI element (parent to gameBoard)
+    [SerializeField] private MainVars.gameStates gameState;
 
     /// <summary>
     /// calculates position for given row and column in board matrix
@@ -28,19 +29,25 @@ public class GameBoard : MonoBehaviour
         return new Vector3(column * scaleRows, row * scaleColumns, 0);
     }
 
-
     private void Awake()
+    {
+        gameState = MainVars.gameStates.falling;
+        StartCoroutine("Initialize");
+    }
+
+    IEnumerator Initialize()
     {
         selectedTile = null;
         board = new Tile[rows, columns];
         GenerateBoard();
-        PlaceCells();
+        yield return StartCoroutine("PlaceCells");
+        gameState = MainVars.gameStates.calm;
     }
 
     /// <summary>
     /// placing tiles to its cells
     /// </summary>
-    void PlaceCells()
+    IEnumerator PlaceCells()
     {
         Vector3 position;
         for (int i = 0; i < rows; i++)
@@ -54,8 +61,9 @@ public class GameBoard : MonoBehaviour
                 }
             }
         }
+        // TODO: change this to be sure that NO ONE TILE IS FALLING
+        yield return new WaitForSeconds(2f);
     }
-
 
     /// <summary>
     /// fills empty cells with random tiles
@@ -243,16 +251,27 @@ public class GameBoard : MonoBehaviour
     ///  try to swap tiles
     /// </summary>
     /// <param name="tileToSwap"></param>
-    public void TrySwapTiles(Tile tileToSwap)
+    public IEnumerator TrySwapTiles(Tile tileToSwap)
     {
+        // TODO: make explosion for tiles as coroutine
+        //
+
+        // cant make moves 
+        if (gameState != MainVars.gameStates.calm) yield break;
 
         // if tile is too far - do nothing
-        if (!GetAdjacentTiles(tileToSwap.row, tileToSwap.column).Contains(selectedTile)) return;
+        if (!GetAdjacentTiles(tileToSwap.row, tileToSwap.column).Contains(selectedTile)) yield break;
 
+        // else swap it
         board[selectedTile.row, selectedTile.column] = tileToSwap;
         board[tileToSwap.row, tileToSwap.column] = selectedTile;
 
-        PlaceCells();
+        // change gameState so player cant make moves
+        gameState = MainVars.gameStates.falling;
+
+        selectedTile.OnDeselected();
+
+        yield return SwapTiles(selectedTile, tileToSwap);
 
         List<Tile> matchedTiles = FindMatch(selectedTile.row, selectedTile.column);
         if (matchedTiles.Count > 2)
@@ -260,17 +279,21 @@ public class GameBoard : MonoBehaviour
             ExplodeTiles(matchedTiles);
         }
 
-        matchedTiles = FindMatch(tileToSwap.row, tileToSwap.column);
-        if (matchedTiles.Count > 2)
+        if (tileToSwap != null)
         {
-            ExplodeTiles(matchedTiles);
+            matchedTiles = FindMatch(tileToSwap.row, tileToSwap.column);
+            if (matchedTiles.Count > 2)
+            {
+                ExplodeTiles(matchedTiles);
+            }
         }
 
         do
         {
+            gameState = MainVars.gameStates.falling;
             DescendCells();
             GenerateBoard();
-            PlaceCells();
+            yield return StartCoroutine("PlaceCells");
         }
         while (CheckForMatchForEveryTile());
 
@@ -278,9 +301,27 @@ public class GameBoard : MonoBehaviour
         // after this no  more matches possible
 
 
-        selectedTile.OnDeselected();
         selectedTile = null;
+        gameState = MainVars.gameStates.calm;
     }
+
+    IEnumerator SwapTiles(Tile selectedTile, Tile tileToSwap)
+    {
+        int old_row = selectedTile.row;
+        int old_column = selectedTile.column;
+
+        selectedTile.row = tileToSwap.row;
+        selectedTile.column = tileToSwap.column;
+
+        tileToSwap.row = old_row;
+        tileToSwap.column = old_column;
+        // swap positions with animation
+        selectedTile.StartCoroutine("MoveTo", tileToSwap.transform.localPosition);
+        // wait for 2nd to end
+        yield return tileToSwap.StartCoroutine("MoveTo", selectedTile.transform.localPosition);
+    }
+
+
 
 
     /// <summary>
@@ -326,7 +367,7 @@ public class GameBoard : MonoBehaviour
         int points = (int)(matchedTile.Count * 40 + Mathf.Pow(2, matchedTile.Count) * 10);
 
         // send points to GameManager
-         GameManager.Instance.AddPoints(points);
+        GameManager.Instance.AddPoints(points);
        
         
         foreach (Tile i in matchedTile)

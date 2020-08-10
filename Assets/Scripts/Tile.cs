@@ -7,10 +7,23 @@ using UnityEngine.UI;
 public class Tile : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] float scale = 1.25f;
+    static private float Yoffset = 0;
+    float fallSpeed = 1;
     public Sprite sprite;
     Image image;
-    BoxCollider2D col;
-    public int row, column;
+
+    public int row = -1, column = -1;
+
+    private bool IsJustSpawnedTile = true; // for falling down tile if it is just spawned
+
+    private void Awake()
+    {
+        if (Yoffset == 0)
+        {
+            GameBoard gm = FindObjectOfType<GameBoard>();
+            Yoffset = gm.scaleColumns * gm.rows + gm.transform.position.y;
+        }
+    }
 
     /// <summary>
     /// randomezes type of tile
@@ -27,7 +40,10 @@ public class Tile : MonoBehaviour, IPointerClickHandler
     }
     public void OnDeselected()
     {
-        image.color = Color.white;
+        if (image != null)
+        {
+            image.color = Color.white;
+        }
     }
 
 
@@ -49,9 +65,6 @@ public class Tile : MonoBehaviour, IPointerClickHandler
     /// <param name="_column"></param>
     public void PlaceInCell(Vector3 localposition, int _row, int _column)
     {
-        transform.localPosition = localposition;
-        row = _row;
-        column = _column;
         if (image == null)
         {
             image = gameObject.AddComponent<Image>();
@@ -59,12 +72,55 @@ public class Tile : MonoBehaviour, IPointerClickHandler
 
             image.transform.localScale = Vector3.one * scale;
         }
-        if (col == null)
+        if (IsJustSpawnedTile)
         {
-            col = gameObject.AddComponent<BoxCollider2D>();
+            transform.localPosition = localposition;
+            IsJustSpawnedTile = false;
+            StartCoroutine("FallDown");
+        }
+        else
+        {
+            if (row != -1)
+            {
+                StartCoroutine("MoveTo", localposition);
+            }
+        }
+        row = _row;
+        column = _column;
+    }
+
+    IEnumerator FallDown()
+    {
+        Vector3 end = transform.localPosition;
+        transform.localPosition += new Vector3(0, Yoffset, 0);
+        Vector3 start = transform.localPosition;
+        float t = 0;
+        while (transform.localPosition != end)
+        {
+            yield return new WaitForEndOfFrame();
+            t += fallSpeed * Time.deltaTime;
+            transform.localPosition = new Vector3(start.x, Mathf.Lerp(start.y, end.y, t), start.z);
         }
     }
 
+    public IEnumerator MoveTo(Vector3 localPosition)
+    {
+        Vector3 end = localPosition;
+        Vector3 start = transform.localPosition;
+        float t = 0;
+        while (transform.localPosition != end)
+        {
+            yield return new WaitForEndOfFrame();
+            t += fallSpeed * Time.deltaTime;
+            transform.localPosition = new Vector3(Mathf.Lerp(start.x, end.x, t), Mathf.Lerp(start.y, end.y, t), Mathf.Lerp(start.z, end.z, t));
+        }
+        yield return null;
+    }
+    private void OnDisable()
+    {
+       // clip/animation of death
+      
+    }
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         if (MainVars.gameBoard.selectedTile == null)           // no selected tile
@@ -81,7 +137,7 @@ public class Tile : MonoBehaviour, IPointerClickHandler
             }
             else                                             // clicking on another tile 
             {
-                MainVars.gameBoard.TrySwapTiles(this);
+                MainVars.gameBoard.StartCoroutine("TrySwapTiles", this);
             }
         }
     }
