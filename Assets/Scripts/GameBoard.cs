@@ -257,15 +257,12 @@ public class GameBoard : MonoBehaviour
         List<Tile> matchedTiles = FindMatch(selectedTile.row, selectedTile.column);
         if (matchedTiles.Count > 2)
         {
-            Debug.Log("Is a match!!! on " + selectedTile.row + " row and " + selectedTile.column + " column");
             ExplodeTiles(matchedTiles);
         }
 
         matchedTiles = FindMatch(tileToSwap.row, tileToSwap.column);
         if (matchedTiles.Count > 2)
         {
-
-            Debug.Log("Is a match!!!" + tileToSwap.row + " row and " + tileToSwap.column + " column");
             ExplodeTiles(matchedTiles);
         }
 
@@ -326,11 +323,11 @@ public class GameBoard : MonoBehaviour
     private void ExplodeTiles(List<Tile> matchedTile)
     {
         // get points for matching
-       // int points = (int)(matchedTile.Count * 40 + Mathf.Pow(2, matchedTile.Count) * 10);
+        int points = (int)(matchedTile.Count * 40 + Mathf.Pow(2, matchedTile.Count) * 10);
 
-        // send points to GameManager???
-        // gameManager.AddPoints(points);
-        // 
+        // send points to GameManager
+         GameManager.Instance.AddPoints(points);
+       
         
         foreach (Tile i in matchedTile)
         {

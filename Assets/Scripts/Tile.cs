@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class Tile : MonoBehaviour, IPointerClickHandler
 {
-    float scale = 0.75f;
+    [SerializeField] float scale = 1.25f;
     public Sprite sprite;
     Image image;
     BoxCollider2D col;
@@ -17,7 +17,7 @@ public class Tile : MonoBehaviour, IPointerClickHandler
     /// </summary>
     public void RandomizeTile()
     {
-        sprite = Constants.spriteList[Random.Range(0, Constants.spriteList.Length)];
+        sprite = MainVars.spriteList[Random.Range(0, MainVars.spriteList.Length)];
         name = sprite.name;
     }
 
@@ -67,21 +67,21 @@ public class Tile : MonoBehaviour, IPointerClickHandler
 
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
-        if (Constants.gameBoard.selectedTile == null)           // no selected tile
+        if (MainVars.gameBoard.selectedTile == null)           // no selected tile
         {
             OnSelected();
-            Constants.gameBoard.selectedTile = this;
+            MainVars.gameBoard.selectedTile = this;
         }
         else
         {
-            if (Constants.gameBoard.selectedTile == this)       // if clicking on same tile as selected
+            if (MainVars.gameBoard.selectedTile == this)       // if clicking on same tile as selected
             {
                 OnDeselected();
-                Constants.gameBoard.selectedTile = null;
+                MainVars.gameBoard.selectedTile = null;
             }
             else                                             // clicking on another tile 
             {
-                Constants.gameBoard.TrySwapTiles(this);
+                MainVars.gameBoard.TrySwapTiles(this);
             }
         }
     }
