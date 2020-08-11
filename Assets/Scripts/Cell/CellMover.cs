@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using ObjectPooling;
 
 namespace Cell.Mover
 {
     [RequireComponent(typeof(CellBase))]
-    public class CellMover : MonoBehaviour
+    public class CellMover : MonoBehaviour, IPoolable
     {
         CellBase cellBase;
 
@@ -36,11 +37,11 @@ namespace Cell.Mover
             {
                 IsJustSpawnedCell = false;
                 transform.localPosition = localposition;
-                StartCoroutine("FallDown"); /// see <see cref="FallDown()"/>
+                StartCoroutine(nameof(FallDown));
             }
             else
             {
-                StartCoroutine("MoveTo", localposition);/// see <see cref="MoveTo(Vector3)"/>
+                StartCoroutine(nameof(MoveTo), localposition);
             }
             cellBase.SetCell(_row, _column);
         }
@@ -72,6 +73,16 @@ namespace Cell.Mover
                 transform.localPosition = new Vector3(Mathf.Lerp(start.x, end.x, t), Mathf.Lerp(start.y, end.y, t), Mathf.Lerp(start.z, end.z, t));
             }
             yield return null;
+        }
+
+        void IPoolable.ResetState()
+        {
+            IsJustSpawnedCell = true;
+        }
+
+        GameObject IPoolable.GetGO()
+        {
+            return ((IPoolable)cellBase).GetGO();
         }
     }
 }

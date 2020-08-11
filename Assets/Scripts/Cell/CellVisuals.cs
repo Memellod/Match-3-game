@@ -11,7 +11,7 @@ namespace Cell.Visuals
         public Sprite sprite;
         internal Image image;
 
-        private void Start()
+        void Initialize()
         {
             cellBase = GetComponent<CellBase>();
             image = gameObject.AddComponent<Image>();
@@ -21,7 +21,12 @@ namespace Cell.Visuals
 
         internal void Randomize()
         {
+            if (image == null)
+            {
+                Initialize();
+            }
             sprite = MainVars.spriteList[Random.Range(0, MainVars.spriteList.Length)];
+            image.sprite = sprite;
             name = sprite.name;
         }
     }

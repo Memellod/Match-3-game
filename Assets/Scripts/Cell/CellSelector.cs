@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
+using GameBoards;
 using static MainVars;
 
 namespace Cell.Selector
@@ -33,7 +34,7 @@ namespace Cell.Selector
                 }
                 else                                             // some tile is selected and its not this so try to swap this and selected tile 
                 {
-                    gameBoard.StartCoroutine("TrySwapTiles", thisTile);
+                    gameBoard.StartCoroutine(nameof(GameBoard.TrySwapTiles), thisTile); 
                 }
             }
         }

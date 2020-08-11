@@ -9,7 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7347754004882414836}
-  - component: {fileID: 7347754004882414837}
+  - component: {fileID: 2024298190258002787}
+  - component: {fileID: 3880070398521087171}
+  - component: {fileID: 7885127034072123343}
+  - component: {fileID: 5846296728374631565}
   m_Layer: 0
   m_Name: Game Board
   m_TagString: Untagged
@@ -36,7 +39,45 @@ RectTransform:
   m_AnchoredPosition: {x: 100, y: 75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &7347754004882414837
+--- !u!114 &2024298190258002787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7347754004882414602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56edd03a1b7f3f646aaec0030684aabe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3880070398521087171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7347754004882414602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c73cd54e8440f954d9d2201d7788dc83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7885127034072123343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7347754004882414602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c407d362026b5b4b99aeca18d4c3490, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tileBase: {fileID: 4209561910683697120, guid: 65599d9ebf6d6cf45a0af5faa6f44e53,
+    type: 3}
+--- !u!114 &5846296728374631565
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -50,9 +91,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   columns: 6
   rows: 9
-  tileBase: {fileID: 4209561910683697120, guid: 65599d9ebf6d6cf45a0af5faa6f44e53,
-    type: 3}
-  selectedTile: {fileID: 0}
   scaleColumns: 120
   scaleRows: 120
   gameState: 0
+  selectedTile: {fileID: 0}

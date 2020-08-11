@@ -1,10 +1,11 @@
 ﻿using Cell.Visuals;
+using ObjectPooling;
 using UnityEngine;
 
 namespace Cell
 {
     [RequireComponent(typeof(CellVisuals))]
-    public class CellBase : MonoBehaviour
+    public class CellBase : MonoBehaviour, IPoolable
     {
         [SerializeField] internal float scale = 1.25f;
         CellVisuals visual;
@@ -20,7 +21,7 @@ namespace Cell
         /// </summary>
         public void RandomizeTile()
         {
-            GetComponent<CellVisuals>().Randomize();
+           visual.Randomize();
         }
 
         public void OnSelected()
@@ -50,5 +51,16 @@ namespace Cell
             column = _column;
         }
 
+        void IPoolable.ResetState()
+        {
+            SetCell(-1, -1);
+            
+            transform.position = Vector3.one * 10000;
+        }
+
+        GameObject IPoolable.GetGO()
+        {
+            return gameObject;
+        }
     }
 }
