@@ -6,6 +6,7 @@ using static MainVars;
 using ObjectPooling;
 using GameBoards.MatchFinding;
 using System;
+using Cell.Visuals;
 
 namespace GameBoards.CellManagement
 {
@@ -85,6 +86,7 @@ namespace GameBoards.CellManagement
             foreach (CellBase i in matchedTile)
             {
                 gameBoard.board[i.row, i.column] = null;
+                i.GetComponent<CellVisuals>().PlayVFX();
                 cellPool.AddObject(i.gameObject);
             }
         }

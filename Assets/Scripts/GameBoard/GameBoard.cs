@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Cell;
+using Cell.Visuals;
 using static MainVars;
 using GameBoards.CellPositionHandling;
 using GameBoards.MatchFinding;
@@ -23,6 +24,9 @@ namespace GameBoards
         CellPositionHandler cellPositionHandler;
         MatchFinder matchFinder;
         CellManager cellManager;
+
+        float visualDuration = 0.5f; // duration of visual effects to wait before continue 
+
 
 
         private void Awake()
@@ -61,16 +65,12 @@ namespace GameBoards
             gameState = gameStates.calm;
         }
 
-
-
         /// <summary>
         ///  try to swap tiles
         /// </summary>
         /// <param name="tileToSwap"></param>
         public IEnumerator TrySwapTiles(CellBase tileToSwap)
         {
-            // TODO: make explosion for tiles as coroutine
-            //
 
             // cant make moves 
             if (gameState != gameStates.calm) yield break;
@@ -78,7 +78,9 @@ namespace GameBoards
             // if tile is too far - do nothing
             if (!matchFinder.GetAdjacentTiles(tileToSwap.row, tileToSwap.column).Contains(selectedTile)) yield break;
 
-            // if no match after turn - do not do it
+
+            visualDuration = selectedTile.GetComponent<CellVisuals>().duration;
+            // TODO: F if no match after turn - do not do it
             //matchFinder.IsAbleToMove()
 
             // else swap it
@@ -105,6 +107,7 @@ namespace GameBoards
             do
             {
                 gameState = gameStates.falling;
+                yield return new WaitForSeconds(visualDuration);
                 cellPositionHandler.DescendCells();
                 cellManager.GenerateBoard();
                 yield return cellPositionHandler.StartCoroutine(nameof(cellPositionHandler.PlaceCells));

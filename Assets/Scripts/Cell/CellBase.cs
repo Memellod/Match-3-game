@@ -55,7 +55,7 @@ namespace Cell
         {
             SetCell(-1, -1);
             
-            transform.position = Vector3.one * 10000;
+           // transform.position = Vector3.one * 10000;
         }
 
         GameObject IPoolable.GetGO()
