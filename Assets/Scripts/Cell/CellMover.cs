@@ -7,11 +7,14 @@ namespace Cell.Mover
     [RequireComponent(typeof(CellBase))]
     public class CellMover : MonoBehaviour, IPoolable
     {
+        // component CellBase
         CellBase cellBase;
-
+        // offset for changing position during using in pool
         static private float Yoffset = 0;
+        // speed of falling after spawning and emptying lower cells
         float fallSpeed = 1;
-        private bool IsJustSpawnedCell = true; // for falling down tile if it is just spawned
+        // for falling down tile if it is just spawned
+        private bool IsJustSpawnedCell = true; 
 
 
         private void Awake()
@@ -33,19 +36,26 @@ namespace Cell.Mover
         /// <param name="_column"></param>
         public void PlaceInCell(Vector3 localposition, int _row, int _column)
         {
+            // if considering it is as new tile - make it fall from up to its position
             if (IsJustSpawnedCell)
             {
                 IsJustSpawnedCell = false;
                 transform.localPosition = localposition;
                 StartCoroutine(nameof(FallDown));
             }
+            // else just move (right, left , up or down)
             else
             {
                 StartCoroutine(nameof(MoveTo), localposition);
             }
+            // set its cell
             cellBase.SetCell(_row, _column);
         }
 
+        /// <summary>
+        /// Coroutine making object to fall on its position AFTER spawning
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator FallDown()
         {
             Vector3 end = transform.localPosition;
@@ -60,7 +70,10 @@ namespace Cell.Mover
             }
             yield return null;
         }
-
+        /// <summary>
+        /// Coroutine making object to fall on its position after changing state of board <b>(not for new spawned)</b>
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator MoveTo(Vector3 localPosition)
         {
             Vector3 end = localPosition;

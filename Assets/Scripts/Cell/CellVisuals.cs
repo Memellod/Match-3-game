@@ -9,16 +9,28 @@ using static MainVars;
 
 namespace Cell.Visuals
 {
+    [RequireComponent(typeof(CellBase))]
     public class CellVisuals : MonoBehaviour
     {
+        // base component
         CellBase cellBase;
+        // sprite for image
         public Sprite sprite;
+        // ref to image component
         internal Image image;
+        // ref to animator
         Animator animator;
+        // ref to explosion after moving object to pool
         GameObject explosion;
+        // bool indicating is animation is NOT playing
         public bool isEndedAnimation;
+        // ref to VFX gamObject (actually its a particle system)
         [SerializeField] GameObject VFX;
+        // duration of all VFX effects (currently using only one)
         public float duration { get; private set; }
+
+
+        CellManager cm;
 
         void Initialize()
         {
@@ -35,9 +47,7 @@ namespace Cell.Visuals
             {
                 duration += ac.length;
             }
-
-            CellManager cm = gameBoard.GetComponent<CellManager>();
-            cm.CheckForWork += IsEnded;
+            cm = gameBoard.GetComponent<CellManager>();
             isEndedAnimation = true;
 
         }
@@ -55,32 +65,19 @@ namespace Cell.Visuals
 
         internal IEnumerator PlayVFX()
         {
+            cm.playingAnimationsList.Add(this);
+            // play animation
             animator.SetTrigger("Matched");
+            //wait for it to end
             yield return new WaitForSeconds(duration);
+            // instantiate VFX gameObject
             explosion = Instantiate(VFX, transform.parent);
             explosion.transform.localPosition = gameObject.transform.localPosition;
             transform.position += Vector3.one * 10000;
+            yield return new WaitForSeconds(explosion.GetComponent<ParticleSystem>().main.duration);
+            cm.playingAnimationsList.Remove(this);
         }
 
-
-        public void RevertIsEndedFlag()
-        {
-            isEndedAnimation = !isEndedAnimation;
-        }
-
-        bool IsEnded()
-        {
-
-            // check for animation ends
-            if (isEndedAnimation)
-            {
-                //check for 
-                return explosion == null;
-            }
-            return false;
-
-
-        }
 
     }
 }

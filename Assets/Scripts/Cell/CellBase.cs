@@ -7,8 +7,11 @@ namespace Cell
     [RequireComponent(typeof(CellVisuals))]
     public class CellBase : MonoBehaviour, IPoolable
     {
-        [SerializeField] internal float scale = 1.25f;
+        // scale of a image
+        [SerializeField] internal float scale = 1.5f;
+        // visual component
         CellVisuals visual;
+        // row and column in board 
         public int row = -1, column = -1;
 
 
@@ -21,6 +24,7 @@ namespace Cell
         /// </summary>
         public void RandomizeTile()
         {
+            // now its type defined by visual component
            visual.Randomize();
         }
 
@@ -42,21 +46,32 @@ namespace Cell
         /// <returns></returns>
         public bool IsSame(CellBase cell)
         {
+            // now its type defined by visual component
             return visual.sprite == cell.visual.sprite;
         }
 
+        /// <summary>
+        /// sets row and column of a cell
+        /// </summary>
+        /// <param name="_row"></param>
+        /// <param name="_column"></param>
         public void SetCell(int _row, int _column)
         {
             row = _row;
             column = _column;
         }
 
+        /// <summary>
+        ///  reset state for further using with no instantiating
+        /// </summary>
         void IPoolable.ResetState()
         {
             SetCell(-1, -1);
+            transform.position = Vector3.one * 10000;
             
         }
 
+        /// method for getting game object script attached to
         GameObject IPoolable.GetGO()
         {
             return gameObject;

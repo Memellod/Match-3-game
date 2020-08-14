@@ -7,8 +7,6 @@ using ObjectPooling;
 using GameBoards.MatchFinding;
 using System;
 using Cell.Visuals;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Net.NetworkInformation;
 
 namespace GameBoards.CellManagement
 {
@@ -20,7 +18,8 @@ namespace GameBoards.CellManagement
         MatchFinder matchFinder;
         [SerializeField] GameObject tileBase = null; // base of tile
 
-        public event IsWorkEnded CheckForWork = () => { return true; };
+
+        public List<CellVisuals> playingAnimationsList;
 
         private void Initialize()
         {
@@ -30,6 +29,7 @@ namespace GameBoards.CellManagement
 
             cellPool = new ObjectPool(columns * rows, tileBase);
             matchFinder = GetComponent<MatchFinder>();
+            playingAnimationsList = new List<CellVisuals>();
 
         }
         private void InitCell(GameObject newCellGO)
@@ -81,11 +81,6 @@ namespace GameBoards.CellManagement
         /// <param name="matchedTile"></param>
         internal IEnumerator ExplodeTiles(List<CellBase> matchedTile)
         {
-            // get points for matching
-            int points = (int)(matchedTile.Count * 40 + Mathf.Pow(2, matchedTile.Count) * 10);
-
-            // send points to GameManager
-            GameManager.Instance.AddPoints(points);
 
 
             foreach (CellBase i in matchedTile)
@@ -101,23 +96,23 @@ namespace GameBoards.CellManagement
             {
                 cellPool.AddObject(i.gameObject);
             }
-        }
 
+            // get points for matching
+            int points = (int)(matchedTile.Count * 40 + Mathf.Pow(2, matchedTile.Count) * 10);
+
+            // send points to GameManager
+            GameManager.Instance.AddPoints(points);
+
+        }
+       
         private IEnumerator WaitForVFX()
         {
             bool flag;
             do
             {
                 flag = true;
-
-                foreach (var i in CheckForWork.GetInvocationList())
-                {
-                    if ((bool)i.DynamicInvoke() == false)
-                    {
-                        flag = false;
-                        break;
-                    }
-                }
+                yield return new WaitForSeconds(0.01f);
+                flag = playingAnimationsList.Count == 0;
             } while (!flag);
             yield break;
         }

@@ -25,9 +25,7 @@ namespace GameBoards
         MatchFinder matchFinder;
         CellManager cellManager;
 
-        float visualDuration = 0.5f; // duration of visual effects to wait before continue 
-
-
+        bool foundMoreMatches = false; 
 
         private void Awake()
         {
@@ -79,8 +77,6 @@ namespace GameBoards
             if (!matchFinder.GetAdjacentTiles(tileToSwap.row, tileToSwap.column).Contains(selectedTile)) yield break;
 
 
-            visualDuration = selectedTile.GetComponent<CellVisuals>().duration;
-
             // change gameState so player cant make moves
             gameState = gameStates.falling;
 
@@ -89,15 +85,12 @@ namespace GameBoards
             yield return cellPositionHandler.SwapTilesWithAnimation(selectedTile, tileToSwap);
 
             
-
-            // else swap it
-
-
+            // find matches if exist
             List<CellBase> matchedTiles1 = matchFinder.FindMatch(selectedTile.row, selectedTile.column);
             List<CellBase> matchedTiles2 = matchFinder.FindMatch(tileToSwap.row, tileToSwap.column);
 
 
-            // TODO: if no match after turn - swap back
+            // if no match after turn - swap back
             if (matchedTiles1.Count < 3 && matchedTiles2.Count < 3)
             {
                 yield return cellPositionHandler.SwapTilesWithAnimation(selectedTile, tileToSwap);
@@ -107,17 +100,18 @@ namespace GameBoards
             }
 
 
+            // if both have objects matches
             if (matchedTiles1.Count > 2 && matchedTiles2.Count > 2)
             {
                 cellManager.StartCoroutine(nameof(cellManager.ExplodeTiles), matchedTiles1);
                 yield return cellManager.ExplodeTiles(matchedTiles2);
             }
-            else
+            else // only if first
             if (matchedTiles1.Count > 2 )
             {
                 yield return cellManager.ExplodeTiles(matchedTiles1);
             }
-            else
+            else // only if second
             if (matchedTiles2.Count > 2)
             {
 
@@ -127,18 +121,15 @@ namespace GameBoards
 
             do
             {
-                gameState = gameStates.falling;
-                yield return new WaitForSeconds(visualDuration);
-                cellPositionHandler.DescendCells();
-                cellManager.GenerateBoard();
-                yield return cellPositionHandler.StartCoroutine(nameof(cellPositionHandler.PlaceCells));
+                gameState = gameStates.falling;         // change state so no moves can be made
+                cellPositionHandler.DescendCells();     // descend objects on empty cells
+                cellManager.GenerateBoard();            // generate new objects on empty cells
+                yield return cellPositionHandler.StartCoroutine(nameof(cellPositionHandler.PlaceCells)); // wait for them to be placed
+                yield return CheckForMatchForEveryTile();    // check for more matches on the turn
             }
-            while (CheckForMatchForEveryTile());
+            while (foundMoreMatches);
 
-
-            // after this no  more matches possible
-
-
+            // turn is over
             selectedTile = null;
             gameState = gameStates.calm;
         }
@@ -147,7 +138,7 @@ namespace GameBoards
         ///  checks for matches for every tile (after descending for ex.)
         /// </summary>
         /// <returns></returns>
-        internal bool CheckForMatchForEveryTile()
+        internal IEnumerator CheckForMatchForEveryTile()
         {
             bool answer = false;
             bool flag;
@@ -165,13 +156,13 @@ namespace GameBoards
                             {
                                 flag = true;
                                 answer = true;
-                                cellManager.StartCoroutine(nameof(cellManager.ExplodeTiles), matchedTiles); 
+                                yield return cellManager.ExplodeTiles(matchedTiles); 
                             }
                         }
                     }
                 }
             } while (flag);
-            return answer;
+            foundMoreMatches = answer;
         }
 
 
