@@ -7,6 +7,8 @@ using ObjectPooling;
 using GameBoards.MatchFinding;
 using System;
 using Cell.Visuals;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Net.NetworkInformation;
 
 namespace GameBoards.CellManagement
 {
@@ -18,6 +20,8 @@ namespace GameBoards.CellManagement
         MatchFinder matchFinder;
         [SerializeField] GameObject tileBase = null; // base of tile
 
+        public event IsWorkEnded CheckForWork = () => { return true; };
+
         private void Initialize()
         {
             board = gameBoard.GetBoard();
@@ -26,6 +30,7 @@ namespace GameBoards.CellManagement
 
             cellPool = new ObjectPool(columns * rows, tileBase);
             matchFinder = GetComponent<MatchFinder>();
+
         }
         private void InitCell(GameObject newCellGO)
         {
@@ -74,7 +79,7 @@ namespace GameBoards.CellManagement
         ///  delete matched tiles and gain points according to number of tiles exploded
         /// </summary>
         /// <param name="matchedTile"></param>
-        internal void ExplodeTiles(List<CellBase> matchedTile)
+        internal IEnumerator ExplodeTiles(List<CellBase> matchedTile)
         {
             // get points for matching
             int points = (int)(matchedTile.Count * 40 + Mathf.Pow(2, matchedTile.Count) * 10);
@@ -86,11 +91,35 @@ namespace GameBoards.CellManagement
             foreach (CellBase i in matchedTile)
             {
                 gameBoard.board[i.row, i.column] = null;
-                i.GetComponent<CellVisuals>().PlayVFX();
+                var icv = i.GetComponent<CellVisuals>();
+                icv.StartCoroutine(nameof(icv.PlayVFX));                
+            }
+
+            yield return WaitForVFX();
+
+            foreach (CellBase i in matchedTile)
+            {
                 cellPool.AddObject(i.gameObject);
             }
         }
 
+        private IEnumerator WaitForVFX()
+        {
+            bool flag;
+            do
+            {
+                flag = true;
 
+                foreach (var i in CheckForWork.GetInvocationList())
+                {
+                    if ((bool)i.DynamicInvoke() == false)
+                    {
+                        flag = false;
+                        break;
+                    }
+                }
+            } while (!flag);
+            yield break;
+        }
     }
 }

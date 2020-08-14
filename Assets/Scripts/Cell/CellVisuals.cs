@@ -4,15 +4,20 @@ using UnityEngine.UI;
 using System;
 using Random = UnityEngine.Random;
 using ObjectPooling;
+using GameBoards.CellManagement;
+using static MainVars;
 
 namespace Cell.Visuals
 {
-    public class CellVisuals : MonoBehaviour, IPoolable
+    public class CellVisuals : MonoBehaviour
     {
         CellBase cellBase;
         public Sprite sprite;
         internal Image image;
         Animator animator;
+        GameObject explosion;
+        public bool isEndedAnimation;
+        [SerializeField] GameObject VFX;
         public float duration { get; private set; }
 
         void Initialize()
@@ -25,7 +30,16 @@ namespace Cell.Visuals
 
             animator = GetComponent<Animator>();
             AnimationClip[] VFXclips = animator.runtimeAnimatorController.animationClips;
-            duration = VFXclips[0].length;
+            duration = 0;
+            foreach (AnimationClip ac in VFXclips)
+            {
+                duration += ac.length;
+            }
+
+            CellManager cm = gameBoard.GetComponent<CellManager>();
+            cm.CheckForWork += IsEnded;
+            isEndedAnimation = true;
+
         }
 
         internal void Randomize()
@@ -34,26 +48,39 @@ namespace Cell.Visuals
             {
                 Initialize();
             }
-            sprite = MainVars.spriteList[Random.Range(0, MainVars.spriteList.Length)];
+            sprite = spriteList[Random.Range(0, spriteList.Length)];
             image.sprite = sprite;
             name = sprite.name;
         }
 
-        internal void PlayVFX()
+        internal IEnumerator PlayVFX()
         {
             animator.SetTrigger("Matched");
-           // var go = Instantiate(VFX, transform.parent);
-           // go.transform.localPosition = gameObject.transform.localPosition;
+            yield return new WaitForSeconds(duration);
+            explosion = Instantiate(VFX, transform.parent);
+            explosion.transform.localPosition = gameObject.transform.localPosition;
+            transform.position += Vector3.one * 10000;
         }
 
-        public void ResetState()
+
+        public void RevertIsEndedFlag()
+        {
+            isEndedAnimation = !isEndedAnimation;
+        }
+
+        bool IsEnded()
         {
 
+            // check for animation ends
+            if (isEndedAnimation)
+            {
+                //check for 
+                return explosion == null;
+            }
+            return false;
+
+
         }
 
-        public GameObject GetGO()
-        {
-            return ((IPoolable)cellBase).GetGO();
-        }
     }
 }

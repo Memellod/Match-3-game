@@ -80,10 +80,6 @@ namespace GameBoards
 
 
             visualDuration = selectedTile.GetComponent<CellVisuals>().duration;
-            // TODO: F if no match after turn - do not do it
-            //matchFinder.IsAbleToMove()
-
-            // else swap it
 
             // change gameState so player cant make moves
             gameState = gameStates.falling;
@@ -92,17 +88,42 @@ namespace GameBoards
 
             yield return cellPositionHandler.SwapTilesWithAnimation(selectedTile, tileToSwap);
 
-            List<CellBase> matchedTiles = matchFinder.FindMatch(selectedTile.row, selectedTile.column);
-            if (matchedTiles.Count > 2)
+            
+
+            // else swap it
+
+
+            List<CellBase> matchedTiles1 = matchFinder.FindMatch(selectedTile.row, selectedTile.column);
+            List<CellBase> matchedTiles2 = matchFinder.FindMatch(tileToSwap.row, tileToSwap.column);
+
+
+            // TODO: if no match after turn - swap back
+            if (matchedTiles1.Count < 3 && matchedTiles2.Count < 3)
             {
-                cellManager.ExplodeTiles(matchedTiles);
+                yield return cellPositionHandler.SwapTilesWithAnimation(selectedTile, tileToSwap);
+                selectedTile = null;
+                gameState = gameStates.calm;
+                yield break;
             }
 
-            matchedTiles = matchFinder.FindMatch(tileToSwap.row, tileToSwap.column);
-            if (matchedTiles.Count > 2)
+
+            if (matchedTiles1.Count > 2 && matchedTiles2.Count > 2)
             {
-                cellManager.ExplodeTiles(matchedTiles);
+                cellManager.StartCoroutine(nameof(cellManager.ExplodeTiles), matchedTiles1);
+                yield return cellManager.ExplodeTiles(matchedTiles2);
             }
+            else
+            if (matchedTiles1.Count > 2 )
+            {
+                yield return cellManager.ExplodeTiles(matchedTiles1);
+            }
+            else
+            if (matchedTiles2.Count > 2)
+            {
+
+                yield return cellManager.ExplodeTiles(matchedTiles2);
+            }
+
 
             do
             {
@@ -144,7 +165,7 @@ namespace GameBoards
                             {
                                 flag = true;
                                 answer = true;
-                                cellManager.ExplodeTiles(matchedTiles);
+                                cellManager.StartCoroutine(nameof(cellManager.ExplodeTiles), matchedTiles); 
                             }
                         }
                     }
