@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.WSA.Input;
 
 namespace ObjectPooling
 {
@@ -29,6 +27,7 @@ namespace ObjectPooling
                 {
                     poolable.ResetState();
                 }
+                obj.SetActive(false);
             }    
 
         }
@@ -47,6 +46,7 @@ namespace ObjectPooling
 
             GameObject objectToReturn = pooledObjectList[0];
             pooledObjectList.Remove(objectToReturn);
+            objectToReturn.SetActive(true);
             return objectToReturn;
         }
 
@@ -58,6 +58,7 @@ namespace ObjectPooling
             {
                 poolable.ResetState();
             }
+            obj.SetActive(false);
         }
     }
 }

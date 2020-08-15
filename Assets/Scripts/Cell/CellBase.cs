@@ -67,7 +67,7 @@ namespace Cell
         void IPoolable.ResetState()
         {
             SetCell(-1, -1);
-            transform.position = Vector3.one * 10000;
+            //transform.position = Vector3.one * 10000;
             
         }
 

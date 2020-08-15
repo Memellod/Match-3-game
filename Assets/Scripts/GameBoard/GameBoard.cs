@@ -140,11 +140,13 @@ namespace GameBoards
         /// <returns></returns>
         internal IEnumerator CheckForMatchForEveryTile()
         {
+            List<List<CellBase>> listOfMatches = new List<List<CellBase>>();
             bool answer = false;
             bool flag;
             do
             {
                 flag = false;
+
                 for (int i = 0; i < rows; i++)
                 {
                     for (int j = 0; j < columns; j++)
@@ -154,13 +156,27 @@ namespace GameBoards
                             List<CellBase> matchedTiles = matchFinder.FindMatch(i, j);
                             if (matchedTiles.Count > 2)
                             {
+                                listOfMatches.Add(matchedTiles);
                                 flag = true;
                                 answer = true;
-                                yield return cellManager.ExplodeTiles(matchedTiles); 
                             }
                         }
                     }
                 }
+
+                // explode every match found
+                if (flag)
+                {
+                    //start them async
+                    for (int i = 0; i < listOfMatches.Count - 1; i++)
+                    {
+                        cellManager.StartCoroutine(nameof(cellManager.ExplodeTiles), listOfMatches[i]);
+                    }
+                    //wait til last is ended
+                    yield return cellManager.ExplodeTiles(listOfMatches[listOfMatches.Count - 1]);
+                    listOfMatches.Clear();
+                }
+
             } while (flag);
             foundMoreMatches = answer;
         }

@@ -1,12 +1,11 @@
-﻿using UnityEngine;
-using System.Collections;
-using Cell;
-using System.Collections.Generic;
-using static MainVars;
-using ObjectPooling;
-using GameBoards.MatchFinding;
-using System;
+﻿using Cell;
 using Cell.Visuals;
+using GameBoards.MatchFinding;
+using ObjectPooling;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using static MainVars;
 
 namespace GameBoards.CellManagement
 {
@@ -81,8 +80,6 @@ namespace GameBoards.CellManagement
         /// <param name="matchedTile"></param>
         internal IEnumerator ExplodeTiles(List<CellBase> matchedTile)
         {
-
-
             foreach (CellBase i in matchedTile)
             {
                 gameBoard.board[i.row, i.column] = null;
@@ -92,29 +89,30 @@ namespace GameBoards.CellManagement
 
             yield return WaitForVFX();
 
+            yield return HandlePoints(matchedTile);
+
             foreach (CellBase i in matchedTile)
             {
                 cellPool.AddObject(i.gameObject);
             }
 
-            // get points for matching
-            int points = (int)(matchedTile.Count * 40 + Mathf.Pow(2, matchedTile.Count) * 10);
-
-            // send points to GameManager
-            GameManager.Instance.AddPoints(points);
-
         }
-       
+
+        private static IEnumerator HandlePoints(List<CellBase> matchedTile)
+        {
+            // send points to GameManager
+            GameManager.Instance.CalculatePointsOfMatch(matchedTile);
+            yield return null;
+        }
+
         private IEnumerator WaitForVFX()
         {
             bool flag;
             do
             {
-                flag = true;
-                yield return new WaitForSeconds(0.01f);
+                yield return new WaitForSeconds(0.1f);
                 flag = playingAnimationsList.Count == 0;
             } while (!flag);
-            yield break;
         }
     }
 }
