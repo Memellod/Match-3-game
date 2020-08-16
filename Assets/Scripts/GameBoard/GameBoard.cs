@@ -25,7 +25,7 @@ namespace GameBoards
         MatchFinder matchFinder;
         CellManager cellManager;
 
-        bool foundMoreMatches = false; 
+        private bool foundMoreMatches;
 
         private void Awake()
         {
@@ -58,7 +58,11 @@ namespace GameBoards
         }
         IEnumerator Initialize()
         {
-            cellManager.GenerateBoard();
+            do
+            {
+                cellManager.DeleteBoard();
+                cellManager.GenerateBoard();
+            } while (!IsMoveAvailable());
             yield return cellPositionHandler.StartCoroutine(nameof(cellPositionHandler.PlaceCells));
             gameState = gameStates.calm;
         }
@@ -114,7 +118,6 @@ namespace GameBoards
             else // only if second
             if (matchedTiles2.Count > 2)
             {
-
                 yield return cellManager.ExplodeTiles(matchedTiles2);
             }
 
@@ -124,14 +127,117 @@ namespace GameBoards
                 gameState = gameStates.falling;         // change state so no moves can be made
                 cellPositionHandler.DescendCells();     // descend objects on empty cells
                 cellManager.GenerateBoard();            // generate new objects on empty cells
-                yield return cellPositionHandler.StartCoroutine(nameof(cellPositionHandler.PlaceCells)); // wait for them to be placed
-                yield return CheckForMatchForEveryTile();    // check for more matches on the turn
+                yield return StartCoroutine(cellPositionHandler.PlaceCells()); // wait for them to be placed
+                yield return StartCoroutine(CheckForMatchForEveryTile());    // check for more matches on the turn
             }
             while (foundMoreMatches);
+
+            if (!IsMoveAvailable())
+            {
+                // TODO: make some message to appear before regenerating board
+                yield return new WaitForSeconds(2f);
+                //show message
+                while (!IsMoveAvailable())
+                {
+                    cellManager.DeleteBoard();
+                    cellManager.GenerateBoard();
+                }
+            }
 
             // turn is over
             selectedTile = null;
             gameState = gameStates.calm;
+            yield return null;
+        }
+
+        internal bool IsMoveAvailable()
+        {
+            // TODO: add case when its like cross with no core
+            foreach (CellBase cell in board)
+            {
+                cell.isViewed = false;
+            }
+            // find 2 in row or column cells of one type
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < columns; j++)
+                {
+                    if (board[i, j].isViewed) continue;
+
+                    board[i, j].isViewed = true;
+                    // find one adjacent of same type
+                    List<CellBase> adjacent = matchFinder.GetAdjacentTiles(board[i, j].row, board[i, j].column);
+                    List<CellBase> adjacentCells = adjacent.FindAll(x => x.IsSame(board[i, j]) && !x.isViewed);
+                    adjacentCells.Add(board[i, j]);
+                    // if no adjacent of same type found - continue
+                    if (adjacentCells.Count < 2) continue;
+
+                    // find a move that make a match
+                    if (FindAvailableMove(adjacentCells))
+                    {
+                        //adjacentCells.ForEach(x => x.GetComponent<CellVisuals>().image.color = Color.green);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool FindAvailableMove(List<CellBase> setCellBases)
+        {
+            // setCellBases commonly is 2 cells
+            CellBase firstCell = setCellBases[0];
+            CellBase secondCell = setCellBases.Find(x => x.row == firstCell.row && x != firstCell);
+
+            if (secondCell == null) secondCell = setCellBases.Find(x => x.column == firstCell.column && x != firstCell);
+
+            // if its a row
+            if (firstCell.row == secondCell.row)
+            {
+                int columnToCheck = firstCell.column - secondCell.column;
+                List<CellBase> adjacentList = matchFinder.GetAdjacentTiles(firstCell.row, firstCell.column + columnToCheck);
+                CellBase moveableForMatch = adjacentList.Find(x => x.IsSame(firstCell) && x != firstCell);
+
+                if (moveableForMatch != null)
+                {
+                    return true;
+                }
+
+                columnToCheck = secondCell.column - firstCell.column;
+                adjacentList = matchFinder.GetAdjacentTiles(secondCell.row, secondCell.column + columnToCheck);
+                moveableForMatch = adjacentList.Find(x => x.IsSame(secondCell) && x != secondCell);
+
+                if (moveableForMatch != null)
+                {
+                    return true;
+                }
+
+            }
+            // its a column
+            else
+            {
+                int rowToCheck = firstCell.row - secondCell.row;
+                List<CellBase> adjacentList = matchFinder.GetAdjacentTiles(firstCell.row + rowToCheck, firstCell.column);
+                CellBase moveableForMatch = adjacentList.Find(x => x.IsSame(firstCell) && x != firstCell);
+
+                if (moveableForMatch != null)
+                {
+                    return true;
+                }
+
+                rowToCheck = secondCell.row - firstCell.row;
+                adjacentList = matchFinder.GetAdjacentTiles(secondCell.row + rowToCheck, firstCell.column);
+                moveableForMatch = adjacentList.Find(x => x.IsSame(secondCell) && x != secondCell);
+
+                if (moveableForMatch != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+
         }
 
         /// <summary>
@@ -145,6 +251,7 @@ namespace GameBoards
             bool flag;
             do
             {
+                listOfMatches.Clear();
                 flag = false;
 
                 for (int i = 0; i < rows; i++)
@@ -174,7 +281,6 @@ namespace GameBoards
                     }
                     //wait til last is ended
                     yield return cellManager.ExplodeTiles(listOfMatches[listOfMatches.Count - 1]);
-                    listOfMatches.Clear();
                 }
 
             } while (flag);

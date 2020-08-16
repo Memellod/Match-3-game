@@ -34,7 +34,7 @@ namespace Cell.Selector
                 }
                 else                                             // some tile is selected and its not this so try to swap this and selected tile 
                 {
-                    gameBoard.StartCoroutine(nameof(GameBoard.TrySwapTiles), thisTile); 
+                    gameBoard.StartCoroutine(gameBoard.TrySwapTiles(thisTile)); 
                 }
             }
         }

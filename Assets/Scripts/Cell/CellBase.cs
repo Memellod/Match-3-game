@@ -14,7 +14,7 @@ namespace Cell
         // row and column in board 
         public int row = -1, column = -1;
 
-
+        public bool isViewed = false;
         private void  Awake()
         {
             visual = GetComponent<CellVisuals>();

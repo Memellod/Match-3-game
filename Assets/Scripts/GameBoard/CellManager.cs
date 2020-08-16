@@ -36,6 +36,23 @@ namespace GameBoards.CellManagement
             newCellGO.transform.SetParent(gameObject.transform);
         }
 
+
+        internal void DeleteBoard()
+        {
+            if (board == null) Initialize();
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < columns; j++)
+                {
+                    if (board[i, j] != null)
+                    {
+                        cellPool.AddObject(board[i, j].gameObject);
+                        board[i, j] = null;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// fills empty cells with random tiles
         /// </summary>
@@ -69,6 +86,7 @@ namespace GameBoards.CellManagement
                         gameBoard.board[i, j] = newTile;
                     }
                 }
+
             }
         }
 

@@ -148,7 +148,10 @@ namespace GameBoards.MatchFinding
         internal List<CellBase> GetAdjacentTiles(int row, int column)
         {
             if (board == null) Initialize();
+
             List<CellBase> answer = new List<CellBase>();
+
+            if (row < 0 || row == rows || column < 0 || column == columns) return answer;
 
             // add down
             if (row != 0
