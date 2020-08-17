@@ -13,8 +13,7 @@ public static class MainVars
     public enum gameStates { falling,  calm };
     static MainVars()
     {
-
-        spriteList = Resources.LoadAll<Sprite>("Sprites");
+        spriteList = Resources.LoadAll<Sprite>("Sprites"); // load all sprites
         gameBoard = Object.FindObjectOfType<GameBoard>();
 
     }

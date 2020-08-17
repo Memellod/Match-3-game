@@ -1,19 +1,23 @@
-﻿using Cell;
+﻿using System.Collections;
+using Cell;
 using ObjectPooling;
 using System.Collections.Generic;
+using UI;
 using UnityEngine;
 using static MainVars;
 
 public class GameManager : MonoBehaviour
 {    
     public static GameManager Instance { get; private set; }
+
+    public Vector2 lastTapPosition;
     // earned points on level
     int points; 
     // event being invoked on points change during play
     public event ValueChanged<int> PointsChanged;
     // floating text
     [SerializeField] public GameObject floatingText;
-    private ObjectPool textPool;
+    private static ObjectPool textPool;
     private void OnEnable()
     {
         if (Instance == null)
@@ -69,11 +73,12 @@ public class GameManager : MonoBehaviour
         textGO.GetComponent<TextFading>().StartAnimation("+" + points, position); 
 
     }
-
     public void AddToPool(GameObject go)
     {
         textPool.AddObject(go);
     }
+
+ 
     
 
 

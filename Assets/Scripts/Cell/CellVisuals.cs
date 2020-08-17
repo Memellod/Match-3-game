@@ -1,33 +1,28 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-using System;
-using Random = UnityEngine.Random;
+﻿using GameBoards.CellManagement;
 using ObjectPooling;
-using GameBoards.CellManagement;
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
 using static MainVars;
+using Random = UnityEngine.Random;
 
 namespace Cell.Visuals
 {
     [RequireComponent(typeof(CellBase))]
     public class CellVisuals : MonoBehaviour, IPoolable
     {
-        // base component
-        CellBase cellBase;
-        // sprite for image
-        public Sprite sprite;
-        // ref to image component
-        internal Image image;
-        // ref to animator
-        Animator animator;
-        // ref to explosion after moving object to pool
-        GameObject explosion;
-        // bool indicating is animation is NOT playing
-        public bool isEndedAnimation;
-        // ref to VFX gamObject (actually its a particle system)
-        [SerializeField] GameObject VFX;
-        // duration of all VFX effects (currently using only one)
-        public float duration { get; private set; }
+
+        CellBase cellBase;                                      // base component
+        public Sprite sprite;                                   // sprite for image
+        internal Image image;                                   // ref to image component
+        [SerializeField] internal float scale = 1.5f;           // scale of a image
+        Animator animator;                                      // ref to animator
+        GameObject explosion;                                   // ref to explosion after moving object to pool
+        public bool isEndedAnimation;                           // bool indicating is animation is NOT playing
+        [SerializeField] private GameObject VFX;                // ref to VFX gamObject (actually its a particle system)
+        [SerializeField] private AudioClip SFX;                 // ref to audioCLip
+        private static AudioSource audioSource;
+        public float duration { get; private set; }             // duration of all VFX effects (currently using only one)
 
 
         CellManager cm;
@@ -40,7 +35,7 @@ namespace Cell.Visuals
             cm = gameBoard.GetComponent<CellManager>();
 
             image.sprite = sprite;
-            image.transform.localScale = Vector3.one * cellBase.scale;
+            image.transform.localScale = Vector3.one * scale;
 
             // get duration of animation
             animator = GetComponent<Animator>();
@@ -51,13 +46,21 @@ namespace Cell.Visuals
                 duration += ac.length;
             }
 
+            // TODO: very bad, change
+            if (audioSource == null)
+            {
+                audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
+                audioSource.clip = SFX;
+            }
+
+
             isEndedAnimation = true;
 
         }
 
         internal void Randomize()
         {
-            if (image == null)
+            if (cellBase == null)
             {
                 Initialize();
             }
@@ -76,7 +79,13 @@ namespace Cell.Visuals
             // instantiate VFX gameObject
             explosion = Instantiate(VFX, transform.parent);
             explosion.transform.localPosition = gameObject.transform.localPosition;
-            image.enabled = false; 
+            image.enabled = false;
+
+            if (!SoundManager.Instance.explosionSFX.isPlaying)
+            {
+                SoundManager.Instance.explosionSFX.Play(); //PlayClipAtPoint(, Camera.main.gameObject.transform.position);
+            }
+
             yield return new WaitForSeconds(explosion.GetComponent<ParticleSystem>().main.duration);
             cm.playingAnimationsList.Remove(this);
         }

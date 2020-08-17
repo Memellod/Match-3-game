@@ -26,16 +26,11 @@ namespace GameBoards.CellManagement
             rows = board.GetLength(0);
             columns = board.GetLength(1);
 
-            cellPool = new ObjectPool(columns * rows, tileBase);
+            cellPool = new ObjectPool(columns * rows + 1, tileBase);
             matchFinder = GetComponent<MatchFinder>();
             playingAnimationsList = new List<CellVisuals>();
 
         }
-        private void InitCell(GameObject newCellGO)
-        {
-            newCellGO.transform.SetParent(gameObject.transform);
-        }
-
 
         internal void ClearBoard()
         {
@@ -44,11 +39,10 @@ namespace GameBoards.CellManagement
             {
                 for (int j = 0; j < columns; j++)
                 {
-                    if (board[i, j] != null)
-                    {
-                        cellPool.AddObject(board[i, j].gameObject);
-                        board[i, j] = null;
-                    }
+                    if (board[i, j] == null) continue;
+
+                    cellPool.AddObject(board[i, j].gameObject);
+                    board[i, j] = null;
                 }
             }
         }
@@ -64,27 +58,25 @@ namespace GameBoards.CellManagement
             {
                 for (int j = 0; j < columns; j++)
                 {
-                    if (gameBoard.board[i, j] == null)
+                    if (gameBoard.board[i, j] != null) continue;
+
+                    GameObject newTileGO = cellPool.GetObject();
+                    CellBase newTile = newTileGO.GetComponent<CellBase>();
+
+                    newTile.transform.SetParent(gameObject.transform);
+                    newTile.RandomizeTile();
+                    newTile.SetCell(i, j);
+                    gameBoard.board[i, j] = newTile;
+
+                    // while there is match with that type of tile - randomize it
+                    while (matchFinder.Find3StraightMatch(newTile.row, newTile.column))
                     {
-                        GameObject newTileGO = cellPool.GetObject();
-                        CellBase newTile = newTileGO.GetComponent<CellBase>();
-
-                        InitCell(newTileGO);
-
                         newTile.RandomizeTile();
-                        newTile.SetCell(i, j);
-                        gameBoard.board[i, j] = newTile;
-
-                        // while there is match with that type of tile - randomize it
-                        while (matchFinder.Find3StraightMatch(newTile.row, newTile.column))
-                        {
-                            newTile.RandomizeTile();
-                        }
-
-                        // after defining type of tile - put in board
-
-                        gameBoard.board[i, j] = newTile;
                     }
+
+                    // after defining type of tile - put in board
+
+                    gameBoard.board[i, j] = newTile;
                 }
 
             }

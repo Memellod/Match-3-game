@@ -2,26 +2,27 @@
 using System.Collections;
 using UnityEngine.UI;
 
-public class ScoreText : MonoBehaviour
+namespace UI
 {
-    Text scoreText;
-    GameManager gm;
-    private void Awake()
+    public class ScoreText : MonoBehaviour
     {
-        scoreText = GetComponent<Text>();
-        gm = FindObjectOfType<GameManager>();
-    }
-    private void Start()
-    {
-        gm.PointsChanged += UpdateText;
-    }
-    void UpdateText(int points)
-    {
-        scoreText.text = "Score : " + points.ToString();
-    }
+        Text scoreText;
+        GameManager gm;
 
-    private void OnDisable()
-    {
-        gm.PointsChanged -= UpdateText;
+        private void Awake()
+        {
+            scoreText = GetComponent<Text>();
+            gm = FindObjectOfType<GameManager>();
+        }
+
+        private void Start()
+        {
+            gm.PointsChanged += UpdateText;
+        }
+
+        private void UpdateText(int points)
+        {
+            scoreText.text = "Score : " + points;
+        }
     }
 }

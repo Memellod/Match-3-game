@@ -7,8 +7,6 @@ namespace Cell
     [RequireComponent(typeof(CellVisuals))]
     public class CellBase : MonoBehaviour, IPoolable
     {
-        // scale of a image
-        [SerializeField] internal float scale = 1.5f;
         // visual component
         CellVisuals visual;
         // row and column in board 
@@ -20,7 +18,7 @@ namespace Cell
             visual = GetComponent<CellVisuals>();
         }
         /// <summary>
-        /// randomezes type of tile
+        /// randomizes type of tile
         /// </summary>
         public void RandomizeTile()
         {

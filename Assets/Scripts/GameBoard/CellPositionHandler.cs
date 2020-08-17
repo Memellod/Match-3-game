@@ -18,7 +18,7 @@ namespace GameBoards.CellPositionHandling
             rows = board.GetLength(0);
             columns = board.GetLength(1);
         }
-       internal IEnumerator SwapTilesWithAnimation(CellBase selectedTile, CellBase tileToSwap)
+       internal IEnumerator SwapCellsWithAnimation(CellBase selectedTile, CellBase tileToSwap)
         {
             board[selectedTile.row, selectedTile.column] = tileToSwap;
             board[tileToSwap.row, tileToSwap.column] = selectedTile;

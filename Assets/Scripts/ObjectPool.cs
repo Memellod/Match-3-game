@@ -58,7 +58,12 @@ namespace ObjectPooling
             {
                 poolable.ResetState();
             }
-            obj.transform.SetParent(GameManager.Instance.transform.root);
+
+            if (GameManager.Instance != null)
+            {
+                obj.transform.SetParent(GameManager.Instance.transform.root);
+            }
+
             obj.SetActive(false);
         }
     }

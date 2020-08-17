@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static MainVars;
 
+
 namespace GameBoards
 {
     [RequireComponent(typeof(CellPositionHandler), typeof(MatchFinder), typeof(CellManager))]
@@ -15,7 +16,7 @@ namespace GameBoards
         [Range(0, 15)]
         [SerializeField] public int columns = 10, rows = 4; // number of cols and rows in board
         [SerializeField] public int scaleColumns = 2, scaleRows = 2;  // scale for calculating position
-        [SerializeField] private gameStates gameState; // state of a game
+        [SerializeField] public gameStates gameState { get; private set; } // state of a game
 
         internal CellBase[,] board;
         internal CellBase selectedTile;
@@ -24,7 +25,7 @@ namespace GameBoards
         MatchFinder matchFinder;
         CellManager cellManager;
 
-        private bool foundMoreMatches; /// changes value by <see cref="IsMoveAvailable"/>
+        private bool foundMatches; /// changes value by <see cref="IsMoveAvailable"/>
 
         private void Awake()
         {
@@ -73,80 +74,98 @@ namespace GameBoards
         public IEnumerator TrySwapTiles(CellBase tileToSwap)
         {
             // TODO: break this function to more function
-            // cant make moves 
-            if (gameState != gameStates.calm) yield break;
 
-            // if tile is too far - do nothing
-            if (!matchFinder.GetAdjacentTiles(tileToSwap.row, tileToSwap.column).Contains(selectedTile)) yield break;
+           
+            if (gameState != gameStates.calm) yield break;                                                             // cant make moves 
+            if (!matchFinder.GetAdjacentTiles(tileToSwap.row, tileToSwap.column).Contains(selectedTile)) yield break; // if tile is too far - do nothing
 
+            gameState = gameStates.falling;                                                                           // change gameState so player cant make moves
+            selectedTile.OnDeselected();                                                                          
 
-            // change gameState so player cant make moves
-            gameState = gameStates.falling;
-
-            selectedTile.OnDeselected();
-
-            yield return cellPositionHandler.SwapTilesWithAnimation(selectedTile, tileToSwap);
-
-            
-            // find matches if exist
-            List<CellBase> matchedTiles1 = matchFinder.FindMatch(selectedTile.row, selectedTile.column);
-            List<CellBase> matchedTiles2 = matchFinder.FindMatch(tileToSwap.row, tileToSwap.column);
-
-
-            // if no match after turn - swap back
-            if (matchedTiles1.Count < 3 && matchedTiles2.Count < 3)
+            yield return cellPositionHandler.SwapCellsWithAnimation(selectedTile, tileToSwap);                       // swap cells with animation
+            yield return HandlePossibleMatches(selectedTile, tileToSwap);                                            // handle possible matches if exist
+            if (!foundMatches)                                                                                       // if not found any match, end turn
             {
-                yield return cellPositionHandler.SwapTilesWithAnimation(selectedTile, tileToSwap);
+                yield return cellPositionHandler.SwapCellsWithAnimation(selectedTile, tileToSwap);                   // swap cells back
                 selectedTile = null;
                 gameState = gameStates.calm;
                 yield break;
             }
 
+            yield return PassiveLoop(); // WAIT TIL NO MORE MATCHES ARE FOUND EVEN AFTER REGENERATING BOARD
 
-            // if both have objects matches
-            if (matchedTiles1.Count > 2 && matchedTiles2.Count > 2)
-            {
-                cellManager.StartCoroutine(cellManager.ExplodeTiles(matchedTiles1));
-                yield return cellManager.ExplodeTiles(matchedTiles2);
-            }
-            else // only if first
-            if (matchedTiles1.Count > 2 )
-            {
-                yield return cellManager.ExplodeTiles(matchedTiles1);
-            }
-            else // only if second
-            if (matchedTiles2.Count > 2)
-            {
-                yield return cellManager.ExplodeTiles(matchedTiles2);
-            }
-
-
-            do
-            {
-                gameState = gameStates.falling;         // change state so no moves can be made
-                cellPositionHandler.DescendCells();     // descend objects on empty cells
-                cellManager.FillEmptyCells();            // generate new objects on empty cells
-                yield return cellPositionHandler.StartCoroutine(cellPositionHandler.PlaceCells()); // wait for them to be placed
-                yield return StartCoroutine(CheckForMatchForEveryTile());    // check for more matches on the turn
-            }
-            while (foundMoreMatches);
-
-            if (!IsMoveAvailable())
+            if (!IsMoveAvailable()) // if regenerating board is needed
             {
                 // TODO: make some message to appear before regenerating board
                 yield return new WaitForSeconds(2f);
-                //show message
-                while (!IsMoveAvailable())
+                //TODO: yield return show message(float time);
+
+                while (!IsMoveAvailable()) // regenerate board to make available move
                 {
-                    cellManager.ClearBoard();
-                    cellManager.FillEmptyCells();
+                    cellManager.ClearBoard();    //firstly clear board
+                    cellManager.FillEmptyCells(); // then fill with objects
                 }
+                yield return cellPositionHandler.StartCoroutine(cellPositionHandler.PlaceCells());
             }
 
             // turn is over
             selectedTile = null;
             gameState = gameStates.calm;
-            yield return null;
+        }
+
+        IEnumerator PassiveLoop()
+        {
+            do                                          // if matches are found and exploded
+            {
+                gameState = gameStates.falling;         // change state so no moves can be made
+                cellPositionHandler.DescendCells();     // descend objects on empty cells
+                cellManager.FillEmptyCells();            // generate new objects on empty cells
+                yield return cellPositionHandler.StartCoroutine(cellPositionHandler.PlaceCells()); // wait for them to be placed
+                yield return CheckForMatchForEveryTile();                          // check for more matches on the turn
+            }
+            while (foundMatches);
+        }
+
+        /// <summary>
+        /// finds any match after 2 cells are swapped
+        /// </summary>
+        /// <param name="firstCell"></param>
+        /// <param name="secondCell"></param>
+        /// <returns></returns>
+        IEnumerator HandlePossibleMatches(CellBase firstCell, CellBase secondCell)
+        {
+            // find matches if exist
+            List<CellBase> matchedCells1 = matchFinder.FindMatch(firstCell.row, firstCell.column);
+            List<CellBase> matchedCells2 = matchFinder.FindMatch(secondCell.row, secondCell.column);
+
+
+            // if no match after turn - swap back
+            if (matchedCells1.Count < 3 && matchedCells2.Count < 3)
+            {
+                foundMatches = false;
+                yield break;
+            }
+
+
+            // if both have objects matches
+            if (matchedCells1.Count > 2 && matchedCells2.Count > 2)
+            {
+                cellManager.StartCoroutine(cellManager.ExplodeTiles(matchedCells1));
+                yield return cellManager.ExplodeTiles(matchedCells2);
+            }
+            else // only if first
+            if (matchedCells1.Count > 2)
+            {
+                yield return cellManager.ExplodeTiles(matchedCells1);
+            }
+            else // only if second
+            if (matchedCells2.Count > 2)
+            {
+                yield return cellManager.ExplodeTiles(matchedCells2);
+            }
+
+            foundMatches = true;
+
         }
 
         internal bool IsMoveAvailable()
@@ -298,7 +317,7 @@ namespace GameBoards
                 }
 
             } while (flag);
-            foundMoreMatches = answer;
+            foundMatches = answer;
         }
 
 

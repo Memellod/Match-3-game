@@ -54,9 +54,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e15a150045ec5eb4681e9e4bbe4abec6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scale: 1.25
   row: -1
   column: -1
+  isViewed: 0
 --- !u!114 &7129552817167222401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70,7 +70,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sprite: {fileID: 21300000, guid: a6cf294174c0a444c990683112008fc0, type: 3}
+  scale: 1.6
+  isEndedAnimation: 0
   VFX: {fileID: 2455486298980664275, guid: 168f4b09638da224cabdcd7723fb5149, type: 3}
+  SFX: {fileID: 8300000, guid: b98e0bfec904549459f7237b420acab6, type: 3}
 --- !u!114 &7971498194826671940
 MonoBehaviour:
   m_ObjectHideFlags: 0
