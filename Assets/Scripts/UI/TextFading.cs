@@ -29,6 +29,7 @@ public class TextFading : MonoBehaviour, IPoolable
 
     private IEnumerator Animate()
     {
+        endOfAnimation += GameManager.Instance.AddToPool;
         Vector3 end = transform.position + new Vector3(0, 1, 0) * distanceToFly;
         Vector3 start = transform.position;
         float t = 0;
@@ -41,9 +42,8 @@ public class TextFading : MonoBehaviour, IPoolable
             color.a = Mathf.Lerp(1, 0, t);
             text.color = color;
         }
-        endOfAnimation?.Invoke(gameObject);
-        endOfAnimation = null;
-        yield break;
+        endOfAnimation.Invoke(gameObject);
+        endOfAnimation -= GameManager.Instance.AddToPool;
     }
 
     GameObject IPoolable.GetGO()

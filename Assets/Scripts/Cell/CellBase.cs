@@ -14,7 +14,7 @@ namespace Cell
         // row and column in board 
         public int row = -1, column = -1;
 
-        public bool isViewed = false;
+        public bool isViewed = false; // used in function to find smth
         private void  Awake()
         {
             visual = GetComponent<CellVisuals>();
@@ -67,7 +67,6 @@ namespace Cell
         void IPoolable.ResetState()
         {
             SetCell(-1, -1);
-            //transform.position = Vector3.one * 10000;
             
         }
 

@@ -10,7 +10,7 @@ using static MainVars;
 namespace Cell.Visuals
 {
     [RequireComponent(typeof(CellBase))]
-    public class CellVisuals : MonoBehaviour
+    public class CellVisuals : MonoBehaviour, IPoolable
     {
         // base component
         CellBase cellBase;
@@ -34,12 +34,15 @@ namespace Cell.Visuals
 
         void Initialize()
         {
+            // get refs to components
             cellBase = GetComponent<CellBase>();
             image = gameObject.GetComponent<Image>();
+            cm = gameBoard.GetComponent<CellManager>();
 
             image.sprite = sprite;
             image.transform.localScale = Vector3.one * cellBase.scale;
 
+            // get duration of animation
             animator = GetComponent<Animator>();
             AnimationClip[] VFXclips = animator.runtimeAnimatorController.animationClips;
             duration = 0;
@@ -47,7 +50,7 @@ namespace Cell.Visuals
             {
                 duration += ac.length;
             }
-            cm = gameBoard.GetComponent<CellManager>();
+
             isEndedAnimation = true;
 
         }
@@ -73,11 +76,22 @@ namespace Cell.Visuals
             // instantiate VFX gameObject
             explosion = Instantiate(VFX, transform.parent);
             explosion.transform.localPosition = gameObject.transform.localPosition;
-            transform.position += Vector3.one * 10000;
+            image.enabled = false; 
             yield return new WaitForSeconds(explosion.GetComponent<ParticleSystem>().main.duration);
             cm.playingAnimationsList.Remove(this);
         }
 
+        public void ResetState()
+        {
+            if (image != null)
+            {
+                image.enabled = true;
+            }
+        }
 
+        public GameObject GetGO()
+        {
+            return ((IPoolable)cellBase).GetGO();
+        }
     }
 }

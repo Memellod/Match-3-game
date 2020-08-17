@@ -40,20 +40,15 @@ public class GameManager : MonoBehaviour
     {
         PointsChanged = (int value) => { };         // creating delegate
         points = 0;
-        textPool = new ObjectPool(10, floatingText);
+        int maxMatches = gameBoard.rows * gameBoard.columns / 3;
+        textPool = new ObjectPool(maxMatches, floatingText);
     }
+
     private void AddPoints(int value)
     {
         points += value;
-        if (PointsChanged != null)
-        {
-            PointsChanged.Invoke(points);
-        }
+        PointsChanged?.Invoke(points);
 
-        if (textPool == null)
-        {
-            textPool = new ObjectPool();
-        }
     }
 
     public void CalculatePointsOfMatch(List<CellBase> matchedTile)
@@ -71,15 +66,13 @@ public class GameManager : MonoBehaviour
 
         var textGO = textPool.GetObject();
         textGO.transform.SetParent(gameBoard.transform);
-        textGO.GetComponent<TextFading>().StartAnimation("+" + points, position);
-        textGO.GetComponent<TextFading>().endOfAnimation += AddToPool;
+        textGO.GetComponent<TextFading>().StartAnimation("+" + points, position); 
 
     }
 
-    private void AddToPool(GameObject go)
+    public void AddToPool(GameObject go)
     {
         textPool.AddObject(go);
-
     }
     
 

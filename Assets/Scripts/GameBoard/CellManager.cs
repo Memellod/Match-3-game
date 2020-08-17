@@ -37,7 +37,7 @@ namespace GameBoards.CellManagement
         }
 
 
-        internal void DeleteBoard()
+        internal void ClearBoard()
         {
             if (board == null) Initialize();
             for (int i = 0; i < rows; i++)
@@ -56,7 +56,7 @@ namespace GameBoards.CellManagement
         /// <summary>
         /// fills empty cells with random tiles
         /// </summary>
-        internal void GenerateBoard()
+        internal void FillEmptyCells()
         {
             if (board == null) Initialize();
 
@@ -107,7 +107,7 @@ namespace GameBoards.CellManagement
 
             yield return WaitForVFX();
 
-            yield return HandlePoints(matchedTile);
+            HandlePoints(matchedTile);
 
             foreach (CellBase i in matchedTile)
             {
@@ -116,11 +116,10 @@ namespace GameBoards.CellManagement
 
         }
 
-        private static IEnumerator HandlePoints(List<CellBase> matchedTile)
+        private static void HandlePoints(List<CellBase> matchedTile)
         {
             // send points to GameManager
             GameManager.Instance.CalculatePointsOfMatch(matchedTile);
-            yield return null;
         }
 
         private IEnumerator WaitForVFX()

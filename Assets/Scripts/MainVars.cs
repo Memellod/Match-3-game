@@ -10,7 +10,7 @@ public static class MainVars
     public delegate void ValueChanged<T>(T new_value);
 
     public delegate void EndOfAction(GameObject go);
-    public enum gameStates { falling, exploding, calm };
+    public enum gameStates { falling,  calm };
     static MainVars()
     {
 
