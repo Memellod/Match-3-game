@@ -15,7 +15,6 @@ namespace Cell.Visuals
         CellBase cellBase;                                      // base component
         public Sprite sprite;                                   // sprite for image
         internal Image image;                                   // ref to image component
-        [SerializeField] internal float scale = 1.5f;           // scale of a image
         Animator animator;                                      // ref to animator
         GameObject explosion;                                   // ref to explosion after moving object to pool
         public bool isEndedAnimation;                           // bool indicating is animation is NOT playing
@@ -35,7 +34,7 @@ namespace Cell.Visuals
             cm = gameBoard.GetComponent<CellManager>();
 
             image.sprite = sprite;
-            image.transform.localScale = Vector3.one * scale;
+            image.transform.localScale = Vector3.one * gameBoard.gemScale;
 
             // get duration of animation
             animator = GetComponent<Animator>();
@@ -83,7 +82,7 @@ namespace Cell.Visuals
 
             if (!SoundManager.Instance.explosionSFX.isPlaying)
             {
-                SoundManager.Instance.explosionSFX.Play(); //PlayClipAtPoint(, Camera.main.gameObject.transform.position);
+                SoundManager.Instance.explosionSFX.Play(); 
             }
 
             yield return new WaitForSeconds(explosion.GetComponent<ParticleSystem>().main.duration);

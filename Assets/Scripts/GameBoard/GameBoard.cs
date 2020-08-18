@@ -1,10 +1,13 @@
-﻿using Cell;
+﻿using System;
+using Cell;
 using GameBoards.CellManagement;
 using GameBoards.CellPositionHandling;
 using GameBoards.MatchFinding;
 using System.Collections;
 using System.Collections.Generic;
+using Cell.Visuals;
 using UnityEngine;
+using UnityEngine.UI;
 using static MainVars;
 
 
@@ -15,8 +18,11 @@ namespace GameBoards
     {
         [Range(0, 15)]
         [SerializeField] public int columns = 10, rows = 4; // number of cols and rows in board
-        [SerializeField] public int scaleColumns = 2, scaleRows = 2;  // scale for calculating position
+        [SerializeField] public float scaleColumns = 2, scaleRows = 2;  // scale for calculating position
+        [SerializeField] public float gemScale = 1f;
+        [SerializeField] private Vector3 spriteOffset;
         [SerializeField] public gameStates gameState { get; private set; } // state of a game
+        [SerializeField] private GameObject parent;
 
         internal CellBase[,] board;
         internal CellBase selectedTile;
@@ -25,10 +31,11 @@ namespace GameBoards
         MatchFinder matchFinder;
         CellManager cellManager;
 
-        private bool foundMatches; /// changes value by <see cref="IsMoveAvailable"/>
+        private bool foundMatches; /// changed by <see cref="IsMoveAvailable"/>
 
-        private void Awake()
+        private void Start()
         {
+            parent = transform.parent.gameObject;
             gameState = gameStates.falling;
 
             cellPositionHandler = GetComponent<CellPositionHandler>();
@@ -54,10 +61,24 @@ namespace GameBoards
         /// <returns></returns>
         internal Vector3 Position(int row, int column)
         {
-            return new Vector3(column * scaleRows, row * scaleColumns, 0);
+            // x for column, y for row
+            return new Vector3(column * scaleColumns, row * scaleRows, 0) + spriteOffset;
+        }
+
+        void ScaleUI()
+        {
+            spriteOffset = spriteList[0].rect.size / 2; // all sprites are same size
+            gameObject.transform.localPosition += spriteOffset / 2;
+            // calculate distance between rows and columns
+            Rect parentRect = parent.GetComponent<RectTransform>().rect;
+            scaleColumns = (parentRect.width - spriteOffset.x) / columns;
+            scaleRows = (parentRect.height - spriteOffset.y) / rows;
+            gemScale = Mathf.Min(scaleColumns, scaleRows) / 100; // todo: find another formula for this
+
         }
         IEnumerator Initialize()
         {
+            ScaleUI();
             do
             {
                 cellManager.ClearBoard();

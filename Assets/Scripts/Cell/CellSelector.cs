@@ -21,7 +21,6 @@ namespace Cell.Selector
             dragDistance = Mathf.Min(Screen.height, Screen.width) * 10 / 100; //dragDistance is 10% width of the screen
             thisTile = GetComponent<CellBase>();
         }
-
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
         {
             if (gameBoard.selectedTile == null)           // no selected tile
