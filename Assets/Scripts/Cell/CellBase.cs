@@ -25,9 +25,9 @@ namespace Cell
         /// </summary>
         public void RandomizeTile()
         {
-            // now its type defined by visual component
+            // now its type defined by visual component   
            visual.Randomize();
-           type = Types.simple;
+           type = Types.simple; 
         }
 
         public void OnSelected()
