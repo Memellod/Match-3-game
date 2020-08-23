@@ -11,9 +11,12 @@ namespace Cell
         CellVisuals visual;
         // row and column in board 
         public int row = -1, column = -1;
+        // enum for types
+        internal enum Types { simple, blocking}
 
+        private Types type;
         public bool isViewed = false; // used in function to find smth
-        private void  Awake()
+        private void Awake()
         {
             visual = GetComponent<CellVisuals>();
         }
@@ -24,6 +27,7 @@ namespace Cell
         {
             // now its type defined by visual component
            visual.Randomize();
+           type = Types.simple;
         }
 
         public void OnSelected()
@@ -72,6 +76,11 @@ namespace Cell
         GameObject IPoolable.GetGO()
         {
             return gameObject;
+        }
+
+        public bool IsMoveable()
+        {
+            return type != Types.blocking;
         }
     }
 }

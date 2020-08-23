@@ -21,7 +21,7 @@ namespace GameBoards
         [SerializeField] public float scaleColumns = 2, scaleRows = 2;  // scale for calculating position
         [SerializeField] public float gemScale = 1f;
         [SerializeField] private Vector3 spriteOffset;
-        [SerializeField] public gameStates gameState { get; private set; } // state of a game
+        [SerializeField] public gameStates gameState; // state of a game
         [SerializeField] private GameObject parent;
 
         internal CellBase[,] board;
@@ -84,7 +84,7 @@ namespace GameBoards
                 cellManager.ClearBoard();
                 cellManager.FillEmptyCells();
             } while (!IsMoveAvailable());
-            yield return cellPositionHandler.StartCoroutine(nameof(cellPositionHandler.PlaceCells));
+            yield return cellPositionHandler.StartCoroutine(cellPositionHandler.PlaceCells());
             gameState = gameStates.calm;
         }
 
@@ -94,10 +94,8 @@ namespace GameBoards
         /// <param name="tileToSwap"></param>
         public IEnumerator TrySwapTiles(CellBase tileToSwap)
         {
-            // TODO: break this function to more function
-
-           
             if (gameState != gameStates.calm) yield break;                                                             // cant make moves 
+            if (!tileToSwap.IsMoveable()) yield break;                                                // blocking tile
             if (!matchFinder.GetAdjacentTiles(tileToSwap.row, tileToSwap.column).Contains(selectedTile)) yield break; // if tile is too far - do nothing
 
             gameState = gameStates.falling;                                                                           // change gameState so player cant make moves

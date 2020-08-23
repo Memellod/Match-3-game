@@ -23,9 +23,9 @@ namespace ObjectPooling
             {
                 GameObject obj = Object.Instantiate(go);
                 pooledObjectList.Add(obj);
-                foreach (IPoolable poolable in obj.GetComponents<IPoolable>())
+                foreach (IPoolable p in obj.GetComponents<IPoolable>())
                 {
-                    poolable.ResetState();
+                    p.ResetState();
                 }
                 obj.SetActive(false);
             }    

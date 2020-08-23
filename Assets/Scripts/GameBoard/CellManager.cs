@@ -63,7 +63,7 @@ namespace GameBoards.CellManagement
                     GameObject newTileGO = cellPool.GetObject();
                     CellBase newTile = newTileGO.GetComponent<CellBase>();
 
-                    newTile.transform.SetParent(gameObject.transform);
+                    newTileGO.transform.SetParent(gameObject.transform);
                     newTile.RandomizeTile();
                     newTile.SetCell(i, j);
                     gameBoard.board[i, j] = newTile;

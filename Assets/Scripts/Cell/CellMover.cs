@@ -12,10 +12,11 @@ namespace Cell.Mover
         // offset for changing position during using in pool
         static private float Yoffset = 0;
         // speed of falling after spawning and emptying lower cells
-        float fallSpeed = 1;
         // for falling down tile if it is just spawned
-        private bool IsJustSpawnedCell = true; 
+        private bool IsJustSpawnedCell = true;
 
+
+        [SerializeField] public float swapSpeed, fallSpeed;
 
         private void Awake()
         {
@@ -41,12 +42,12 @@ namespace Cell.Mover
             {
                 IsJustSpawnedCell = false;
                 transform.localPosition = localposition;
-                StartCoroutine(nameof(FallDown));
+                StartCoroutine(MoveTo(fallSpeed, localposition, Yoffset * Vector3.up));
             }
-            // else just move (right, left , up or down)
+            // else just fall
             else
             {
-                StartCoroutine(nameof(MoveTo), localposition);
+                StartCoroutine(MoveTo(fallSpeed, localposition, Vector3.zero));
             }
             // set its cell
             cellBase.SetCell(_row, _column);
@@ -56,36 +57,19 @@ namespace Cell.Mover
         /// Coroutine making object to fall on its position AFTER spawning
         /// </summary>
         /// <returns></returns>
-        private IEnumerator FallDown()
+        public IEnumerator MoveTo(float speed, Vector3 end, Vector3 offset)
         {
-            Vector3 end = transform.localPosition;
-            transform.localPosition += new Vector3(0, Yoffset, 0);
+            transform.localPosition += offset;
             Vector3 start = transform.localPosition;
             float t = 0;
             while (transform.localPosition != end)
             {
                 yield return new WaitForEndOfFrame();
-                t += fallSpeed * Time.deltaTime;
-                transform.localPosition = new Vector3(start.x, Mathf.Lerp(start.y, end.y, t), start.z);
+                t += speed * Time.deltaTime;
+                transform.localPosition = new Vector3(Mathf.Lerp(start.x, end.x,t ),
+                                                    Mathf.Lerp(start.y, end.y, t), 
+                                                      Mathf.Lerp(start.z, end.z, t));
             }
-            yield return null;
-        }
-        /// <summary>
-        /// Coroutine making object to fall on its position after changing state of board <b>(not for new spawned)</b>
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator MoveTo(Vector3 localPosition)
-        {
-            Vector3 end = localPosition;
-            Vector3 start = transform.localPosition;
-            float t = 0;
-            while (transform.localPosition != end)
-            {
-                yield return new WaitForEndOfFrame();
-                t += fallSpeed * Time.deltaTime;
-                transform.localPosition = new Vector3(Mathf.Lerp(start.x, end.x, t), Mathf.Lerp(start.y, end.y, t), Mathf.Lerp(start.z, end.z, t));
-            }
-            yield return null;
         }
 
         void IPoolable.ResetState()

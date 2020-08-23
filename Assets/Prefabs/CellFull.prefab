@@ -70,7 +70,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sprite: {fileID: 21300000, guid: a6cf294174c0a444c990683112008fc0, type: 3}
-  scale: 2.3
   isEndedAnimation: 0
   VFX: {fileID: 2455486298980664275, guid: 168f4b09638da224cabdcd7723fb5149, type: 3}
   SFX: {fileID: 8300000, guid: b98e0bfec904549459f7237b420acab6, type: 3}
@@ -86,6 +85,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4dad18552b3e2e94fb0f0537831e648b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  swapSpeed: 3
+  fallSpeed: 1.5
 --- !u!114 &6502938194897868975
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,7 +145,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 8d82b3b869f109f449ad269ab2676c64, type: 3}
+  m_Sprite: {fileID: -8237601501483590397, guid: 8d82b3b869f109f449ad269ab2676c64,
+    type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

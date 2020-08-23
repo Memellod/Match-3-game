@@ -11,7 +11,6 @@ namespace GameBoards.CellPositionHandling
         CellBase[,] board;
         int columns, rows;
 
-
         void Initialize()
         {
             board = gameBoard.GetBoard();
@@ -36,11 +35,11 @@ namespace GameBoards.CellPositionHandling
             // swap positions with animation
             CellMover cellMover;
             cellMover = selectedTile.GetComponent<CellMover>();
-            cellMover.StartCoroutine(nameof(cellMover.MoveTo), tileToSwap.transform.localPosition);
+            cellMover.StartCoroutine(cellMover.MoveTo(cellMover.swapSpeed, tileToSwap.transform.localPosition, Vector3.zero));
 
             // wait for 2nd to end
             cellMover = tileToSwap.GetComponent<CellMover>();
-            yield return cellMover.StartCoroutine(nameof(cellMover.MoveTo), selectedTile.transform.localPosition);
+            yield return cellMover.StartCoroutine(cellMover.MoveTo(cellMover.swapSpeed, selectedTile.transform.localPosition, Vector3.zero));
         }
 
 
@@ -91,7 +90,8 @@ namespace GameBoards.CellPositionHandling
                     if (board[i, j] != null)
                     {
                         position = gameBoard.Position(i, j);
-                        board[i, j].GetComponent<CellMover>().PlaceInCell(position, i, j);
+                        CellMover cm = board[i, j].GetComponent<CellMover>();
+                        cm.PlaceInCell(position, i, j);
                     }
                 }
             }
